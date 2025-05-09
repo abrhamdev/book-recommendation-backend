@@ -1,5 +1,5 @@
 import hashPassword from "../services/hashPassword.js";
-import { checkUser, fetchUser, fetchusers, insertUser } from "../models/userModel.js";
+import { checkUser, fetchUser, fetchusers, insertPreference, insertUser } from "../models/userModel.js";
 import { generateToken } from "../services/authService.js";
 import bcrypt from 'bcrypt';
 import { sendVerificationEmail } from "../services/emailService.js";
@@ -122,7 +122,7 @@ export const getProfile= async(req,res)=>{
 
   }catch(error){
     console.log(error);
-    res.status(500).json({ message: "Internal server error" });
+   return res.status(500).json({ message: "Internal server error" });
   }
 }
 
@@ -130,8 +130,17 @@ export const getUsers= async(req,res)=>{
   const { userIds } = req.body;
   try {
      const [users]=await fetchusers(userIds);
-    res.json({ users });
+   return res.json({ users });
   } catch (err) {
-    res.status(500).json({ message: 'Failed to fetch users' });
+   return res.status(500).json({ message: 'Failed to fetch users' });
+  }
+}
+
+export const setPreference=async(req,res)=>{
+  try{
+       await insertPreference(req.body);
+      return res.status(200).json({message:'Welcome To Nova Reads!'});
+  }catch(error){
+   return res.status(500).json({ message: 'Failed to save preference' });
   }
 }

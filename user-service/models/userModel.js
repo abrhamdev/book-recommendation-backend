@@ -45,3 +45,34 @@ export const fetchusers=async(userIds)=>{
     console.log(error);
   }
 }
+
+export const insertPreference=async(preferences)=>{
+  console.log(preferences);
+  try {
+    const {
+      languages,
+      genres,
+      ageGroup,
+      bookLength,
+      authors,
+      userId,
+    } = preferences;
+    
+    await connection.execute(
+      `INSERT INTO preferences 
+        (user_id, languages, genres, age_group, book_length, authors)
+       VALUES (?, ?, ?, ?, ?, ?)`,
+      [
+        userId,
+        JSON.stringify(languages),
+        JSON.stringify(genres),
+        ageGroup,
+        bookLength,
+        JSON.stringify(authors)
+      ]
+    );
+    
+  } catch (err) {
+    throw new Error(err.message);
+  }
+}

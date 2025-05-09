@@ -19,6 +19,7 @@ app.post('/users/login', proxy(process.env.USERS_SERVICE));
 app.post('/users/google-signin', proxy(process.env.USERS_SERVICE));
 app.post('/users/me',authMiddleware, proxy(process.env.USERS_SERVICE));
 app.post('/users/me/profile',authMiddleware, proxy(process.env.USERS_SERVICE));
+app.post('/users/me/preference',authMiddleware, proxy(process.env.USERS_SERVICE));
 
 app.post('/books/trending',proxy(process.env.BOOKS_SERVICE));
 app.get(`/books/getBook/:id`,proxy(process.env.BOOKS_SERVICE));
