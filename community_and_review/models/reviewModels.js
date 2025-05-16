@@ -7,8 +7,8 @@ export const fetchReviews = async (bookId) => {
         SELECT r.*, 
           COUNT(CASE WHEN rr.reaction = 'like' THEN 1 END) AS likes,
           COUNT(CASE WHEN rr.reaction = 'dislike' THEN 1 END) AS dislikes
-        FROM Reviews r
-        LEFT JOIN Review_Reactions rr ON r.reviewID = rr.reviewID
+        FROM reviews r
+        LEFT JOIN review_reactions rr ON r.reviewID = rr.reviewID
         WHERE r.bookID = ? AND r.status = 'public'
         GROUP BY r.reviewID
         ORDER BY r.timestamp DESC
@@ -30,7 +30,7 @@ export const insertReview = async (
 ) => {
   try {
     await connection.execute(
-      `INSERT INTO Reviews (userID, bookID, rating, comment, status) VALUES (?,?, ?,?, ?)`,
+      `INSERT INTO reviews (userID, bookID, rating, comment, status) VALUES (?,?, ?,?, ?)`,
       [userId, bookId, rating, comment, visibility]
     );
   } catch (err) {
@@ -41,7 +41,7 @@ export const insertReview = async (
 export const checkReview = async (userId, bookId) => {
   try {
     const [existingReview] = await connection.execute(
-      "SELECT * FROM Reviews WHERE userID = ? AND bookID = ?",
+      "SELECT * FROM reviews WHERE userID = ? AND bookID = ?",
       [userId, bookId]
     );
     return [existingReview];
@@ -53,7 +53,7 @@ export const checkReview = async (userId, bookId) => {
 export const checkReviewReaction= async (userId, reviewID,reaction) => {
   try {
     const [existingReaction] = await connection.execute(
-      "SELECT * FROM Review_Reactions WHERE userID = ? AND reviewID = ?",
+      "SELECT * FROM review_reactions WHERE userID = ? AND reviewID = ?",
       [userId, reviewID]
     );
     if(existingReaction.length > 0)
@@ -72,7 +72,7 @@ export const checkReviewReaction= async (userId, reviewID,reaction) => {
 export const updateReaction = async (reaction,userId, reviewID) => {
   try {
     await connection.execute(
-      'UPDATE Review_Reactions SET reaction = ? WHERE userID = ? AND reviewID = ?',
+      'UPDATE review_reactions SET reaction = ? WHERE userID = ? AND reviewID = ?',
         [reaction, userId, reviewID]
     );
   } catch (error) {
@@ -83,7 +83,7 @@ export const updateReaction = async (reaction,userId, reviewID) => {
 export const insertReaction = async (reaction, userId,reviewID) => {
   try {
     const [existingReview] = await connection.execute(
-      'INSERT INTO Review_Reactions (userID, reviewID, reaction) VALUES (?, ?, ?)',
+      'INSERT INTO review_reactions (userID, reviewID, reaction) VALUES (?, ?, ?)',
         [userId, reviewID, reaction]
     );
     return [existingReview];
@@ -94,7 +94,7 @@ export const insertReaction = async (reaction, userId,reviewID) => {
 
 export const checkUserReport=async(userID,reviewID)=>{
   try{
-      const checkSql = 'SELECT * FROM Review_Reports WHERE userID = ? AND reviewID = ?';
+      const checkSql = 'SELECT * FROM review_reports WHERE userID = ? AND reviewID = ?';
     const [results]= await connection.query(checkSql, [userID, reviewID]);
     if (results.length > 0) {
       return true;
@@ -108,7 +108,7 @@ export const checkUserReport=async(userID,reviewID)=>{
 
 export const insertReviewReport=async(userID,reviewID,reason)=>{
   try{
-      const insertSql = 'INSERT INTO Review_Reports (userID, reviewID, reason) VALUES (?, ?, ?)';
+      const insertSql = 'INSERT INTO review_reports (userID, reviewID, reason) VALUES (?, ?, ?)';
       connection.execute(insertSql, [userID, reviewID, reason])
   }catch(error){
     console.log(error);
