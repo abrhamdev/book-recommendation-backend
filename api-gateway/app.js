@@ -10,10 +10,22 @@ dotenv.config();
 const app = express();
 
 
+const allowedOrigins = [
+  'https://novareads.netlify.app',
+  'http://localhost:4000' 
+];
+
 app.use(cors({
-  origin: 'https://novareads.netlify.app',
+  origin: function (origin, callback) {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 }));
+
 app.use(express.json());
 
 
