@@ -5,9 +5,8 @@ export const getRecommendation=async (req,res)=>{
   try{
     const userPreference = await axios.get(`${process.env.USERS_SERVICE}/users/me/getPreference?userId=${userId}`);
     const preference = userPreference.data;
-    const recommendations = await axios.post(`http://localhost:5000/recommend`, preference);
+    const recommendations = await axios.post(`https://book-recommendation-backend-c5l5.onrender.com/recommend`, preference);
     const recommendedISBNs = recommendations.data.books;
-    console.log(recommendedISBNs);
     //Fetch book details from Google Books API for each ISBN
       const books = await Promise.all(
         recommendedISBNs.map(async (isbn) => {
