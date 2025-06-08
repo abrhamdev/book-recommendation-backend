@@ -1,5 +1,5 @@
 import hashPassword from "../services/hashPassword.js";
-import { checkUser, fetchUser, fetchusers, insertPreference, insertUser } from "../models/userModel.js";
+import { checkUser, fetchPreference, fetchUser, fetchusers, insertPreference, insertUser } from "../models/userModel.js";
 import { generateToken } from "../services/authService.js";
 import bcrypt from 'bcrypt';
 import { sendVerificationEmail } from "../services/emailService.js";
@@ -142,5 +142,15 @@ export const setPreference=async(req,res)=>{
       return res.status(200).json({message:'Welcome To Nova Reads!'});
   }catch(error){
    return res.status(500).json({ message: 'Failed to save preference' });
+  }
+}
+
+export const getPreference=async(req,res)=>{
+  const { userId } = req.query;
+  try{
+    const [preference] = await fetchPreference(userId);
+    return res.status(200).json(preference[0]);
+  }catch(error){
+   return res.status(500).json({ message: 'Failed to get preference' });
   }
 }

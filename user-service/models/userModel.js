@@ -76,3 +76,15 @@ export const insertPreference=async(preferences)=>{
     throw new Error(err.message);
   }
 }
+
+export const fetchPreference=async(userId)=>{
+  try{
+    const [preferences] = await connection.query(
+      'SELECT * FROM preferences WHERE user_id=?',
+      [userId]
+    );
+    return [preferences];
+  }catch(error){
+    console.log(error);
+  }
+}
