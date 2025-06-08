@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 import pandas as pd
 import numpy as np
 import pickle
+import json
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.preprocessing import MinMaxScaler
 from sklearn.neighbors import NearestNeighbors
@@ -19,13 +20,24 @@ with open("models/tfidf_vectorizer.pkl", 'rb') as f:
 with open("models/scaler.pkl", 'rb') as f:
     scaler = pickle.load(f)
 
+def parse_json_list_field(field):
+    """Parse a JSON-encoded list if it's a string, or return an empty list."""
+    if isinstance(field, list):
+        return field
+    if isinstance(field, str):
+        try:
+            return json.loads(field)
+        except json.JSONDecodeError:
+            return []
+    return []
+
 def vectorize_preferences(preferences):
-    # Extract preferences
-    languages = preferences.get('languages', [])
-    genres = preferences.get('genres', [])
-    authors = preferences.get('authors', [])
-    book_length = preferences.get('bookLength', '')
-    age_group = preferences.get('ageGroup', '')
+    # Parse JSON strings into lists
+    languages = parse_json_list_field(preferences.get('languages', '[]'))
+    genres = parse_json_list_field(preferences.get('genres', '[]'))
+    authors = parse_json_list_field(preferences.get('authors', '[]'))
+    book_length = preferences.get('book_length', '')
+    age_group = preferences.get('age_group', '')
 
     # Map book length to page count
     page_count_map = {'short': 100, 'medium': 225, 'long': 400}
@@ -52,18 +64,25 @@ def vectorize_preferences(preferences):
 def recommend_books():
     try:
         preferences = request.get_json()
+
+        # Validate expected keys in the request
+        expected_keys = {'id', 'user_id', 'age_group', 'book_length', 'languages', 'genres', 'authors', 'created_at'}
         if not preferences:
             return jsonify({'error': 'No preferences provided'}), 400
+        if not expected_keys.issubset(preferences.keys()):
+            return jsonify({'error': f'Missing keys in preferences. Required keys: {expected_keys}'}), 400
 
         # Vectorize user preferences
         feature_vector = vectorize_preferences(preferences)
 
         # Find nearest neighbors
-        distances, indices = knn.kneighbors(feature_vector, n_neighbors=20)
+        distances, indices = knn.kneighbors(feature_vector, n_neighbors=30)
 
         # Get book IDs (using index as ID, or use ISBN if preferred)
         book_ids = df.iloc[indices[0]]['ISBN'].tolist()
-
+        # Filter: only keep valid ISBNs (10-13 digits) and remove duplicates
+        #book_ids = [isbn for isbn in book_ids if isbn.isdigit() and 10 <= len(isbn) <= 13]
+        #book_ids = list(dict.fromkeys(book_ids))
         return jsonify({
             'message': 'Recommendations generated successfully',
             'books': book_ids
@@ -73,4 +92,4 @@ def recommend_books():
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=5000)
+    app.run(debug=True, host='0.0.0.0', port=2000)
