@@ -64,7 +64,7 @@ def vectorize_preferences(preferences):
 def recommend_books():
     try:
         preferences = request.get_json()
-
+        print(preferences)
         # Validate expected keys in the request
         expected_keys = {'id', 'user_id', 'age_group', 'book_length', 'languages', 'genres', 'authors', 'created_at'}
         if not preferences:
@@ -76,13 +76,14 @@ def recommend_books():
         feature_vector = vectorize_preferences(preferences)
 
         # Find nearest neighbors
-        distances, indices = knn.kneighbors(feature_vector, n_neighbors=30)
+        distances, indices = knn.kneighbors(feature_vector, n_neighbors=40)
 
         # Get book IDs (using index as ID, or use ISBN if preferred)
         book_ids = df.iloc[indices[0]]['ISBN'].tolist()
         # Filter: only keep valid ISBNs (10-13 digits) and remove duplicates
-        #book_ids = [isbn for isbn in book_ids if isbn.isdigit() and 10 <= len(isbn) <= 13]
-        #book_ids = list(dict.fromkeys(book_ids))
+        book_ids = [isbn for isbn in book_ids if isbn.isdigit() and 10 <= len(isbn) <= 13]
+        book_ids = list(dict.fromkeys(book_ids))
+        print(book_ids)
         return jsonify({
             'message': 'Recommendations generated successfully',
             'books': book_ids
@@ -92,4 +93,4 @@ def recommend_books():
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
-    app.run(debug=True, host='0.0.0.0', port=2000)
+    app.run(debug=True, host='0.0.0.0', port=5000)
