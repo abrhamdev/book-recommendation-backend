@@ -40,6 +40,9 @@ app.post('/books/trending',proxy(process.env.BOOKS_SERVICE));
 app.get(`/books/getBook/:id`,proxy(process.env.BOOKS_SERVICE));
 app.get(`/books/search`,proxy(process.env.BOOKS_SERVICE));
 app.get(`/books/relatedBooks`,proxy(process.env.BOOKS_SERVICE));
+app.get(`/books/new-releases/:genre`,proxy(process.env.BOOKS_SERVICE));
+app.get(`/books/popular/:genre`,proxy(process.env.BOOKS_SERVICE));
+
 
 
 app.get(`/books/reviews/:id`,proxy(process.env.COMMUNITY_AND_REVIEW_SERVICE));
