@@ -5,8 +5,8 @@ export const getRecommendation=async (req,res)=>{
   try{
     const userPreference = await axios.get(`${process.env.USERS_SERVICE}/users/me/getPreference?userId=${userId}`);
     const preference = userPreference.data;
-    const recommendations = await axios.post(`http://localhost:2000/recommend`, preference);
-    const recommendedISBNs = recommendationsResponse.data.books;
+    const recommendations = await axios.post(`http://localhost:5000/recommend`, preference);
+    const recommendedISBNs = recommendations.data.books;
     console.log(recommendedISBNs);
     //Fetch book details from Google Books API for each ISBN
       const books = await Promise.all(
