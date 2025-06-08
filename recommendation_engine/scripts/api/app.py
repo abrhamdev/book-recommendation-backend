@@ -54,7 +54,9 @@ def vectorize_preferences(preferences):
     tfidf_vector = tfidf.transform([text_features]).toarray()
 
     # Create numerical features
-    numerical_features = scaler.transform([[rating, df['voters'].median(), page_count]])
+    # numerical_features = scaler.transform([[rating, df['voters'].median(), page_count]])
+    numerical_df = pd.DataFrame([[rating, df['voters'].median(), page_count]], columns=["rating", "voters", "page_count"])
+    numerical_features = scaler.transform(numerical_df)
 
     # Combine features
     feature_vector = np.hstack([tfidf_vector, numerical_features])
@@ -64,7 +66,6 @@ def vectorize_preferences(preferences):
 def recommend_books():
     try:
         preferences = request.get_json()
-        print(preferences)
         # Validate expected keys in the request
         expected_keys = {'id', 'user_id', 'age_group', 'book_length', 'languages', 'genres', 'authors', 'created_at'}
         if not preferences:
@@ -83,7 +84,6 @@ def recommend_books():
         # Filter: only keep valid ISBNs (10-13 digits) and remove duplicates
         book_ids = [isbn for isbn in book_ids if isbn.isdigit() and 10 <= len(isbn) <= 13]
         book_ids = list(dict.fromkeys(book_ids))
-        print(book_ids)
         return jsonify({
             'message': 'Recommendations generated successfully',
             'books': book_ids
