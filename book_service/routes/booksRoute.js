@@ -1,11 +1,13 @@
 import express from "express";
-import { getTrending, getBook, search, getRelatedBooks } from "../controllers/bookController.js";
+import { getTrending, getBook, search, getRelatedBooks, getNewReleasesByGenre, getPopularByGenre} from "../controllers/bookController.js";
 
 const bookRouter=express.Router();
 
-bookRouter.post('/trending', getTrending);
+bookRouter.post('/trending', getTrending);          //Is it really post?
 bookRouter.get('/getBook/:id', getBook);
 bookRouter.get('/search', search);
 bookRouter.get('/relatedBooks', getRelatedBooks);
+bookRouter.get('/new-releases/:genre', getNewReleasesByGenre);
+bookRouter.get('/popular/:genre', getPopularByGenre);
 
 export default bookRouter;
