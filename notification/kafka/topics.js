@@ -1,0 +1,1 @@
+export const BOOK_REPORT_ALERT_TOPIC = 'book-report-alerts';

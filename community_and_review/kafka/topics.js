@@ -1,0 +1,1 @@
+export const BOOK_REPORT_ALERTS = "book-report-alerts";
