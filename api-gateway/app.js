@@ -43,6 +43,7 @@ app.get(`/books/relatedBooks`,proxy(process.env.BOOKS_SERVICE));
 app.get(`/books/new-releases/:genre`,proxy(process.env.BOOKS_SERVICE));
 app.get(`/books/popular/:genre`,proxy(process.env.BOOKS_SERVICE));
 app.post(`/books/recommend`,authMiddleware,proxy(process.env.BOOKS_SERVICE));
+app.post(`/api/ethbooks/insertbook`,authMiddleware,proxy(process.env.BOOKS_SERVICE));
 
 app.get(`/books/reviews/:id`,proxy(process.env.COMMUNITY_AND_REVIEW_SERVICE));
 app.post(`/books/setReview`,authMiddleware,proxy(process.env.COMMUNITY_AND_REVIEW_SERVICE));
