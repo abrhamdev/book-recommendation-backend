@@ -12,3 +12,4 @@ Thumbs.db
 npm-debug.log*
 Dockerfile*
 .dockerignore
+/book_service/google_service_account/brs-drive-api-access-8bd9e9139b6c.json
