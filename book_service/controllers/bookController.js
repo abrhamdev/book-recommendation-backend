@@ -1,5 +1,6 @@
 import axios from 'axios';
 import dotenv from 'dotenv';
+import { addbook } from "../models/BookModel.js";
 
 dotenv.config();
 
@@ -196,5 +197,22 @@ export const getPopularByGenre = async (req, res) => {
   } catch (error) {
     console.error(`Error fetching popular books for ${genre}:`, error.message);
     res.status(500).json({ error: `Failed to fetch popular books for genre ${genre}` });
+  }
+};
+
+export const insertBook = async (req, res) => {
+  try {
+    const {
+      title, author, publisher, language,
+      publicationYear, genre, description, pageCount,
+      coverImageUrl, bookFileUrl
+    } = req.body;
+
+    await addbook(title, author, publisher, language,publicationYear, genre, description, pageCount, coverImageUrl, bookFileUrl)
+
+    res.status(201).json({ message: 'Book inserted successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'DB insert failed' });
   }
 };

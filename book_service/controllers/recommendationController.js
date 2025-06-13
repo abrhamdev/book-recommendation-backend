@@ -1,11 +1,14 @@
 import axios from 'axios';
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 export const getRecommendation=async (req,res)=>{
   const { userId } = req.body;
   try{
     const userPreference = await axios.get(`${process.env.USERS_SERVICE}/users/me/getPreference?userId=${userId}`);
     const preference = userPreference.data;
-    const recommendations = await axios.post(`https://book-recommendation-backend-c5l5.onrender.com/recommend`, preference);
+    const recommendations = await axios.post(`${process.env.RECOMMENDATION_ENGINE}/recommend`, preference);
     const recommendedISBNs = recommendations.data.books;
     //Fetch book details from Google Books API for each ISBN
       const books = await Promise.all(

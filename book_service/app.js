@@ -11,5 +11,6 @@ app.use(cors());
 app.use(express.json());
 
 app.use('/books', bookRouter);
+app.use('/api/ethbooks', bookRouter);
 
 export default app;
