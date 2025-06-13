@@ -85,20 +85,59 @@ export const getRelatedBooks = async (req, res) => {
 };
 
 export const search = async (req, res) => {
-  const { q, startIndex = 0, maxResults = 10 } = req.query;
+  const { q, startIndex = 0, maxResults = 10, genre, language, ageGroup, bookLength, minYear, maxYear, minRating } = req.query;
   try {
-    const response = await axios.get(
-      `${process.env.GOOGLE_BOOKS_API_VOLUMES_URL}?q=intitle:${q}&startIndex=${startIndex}&maxResults=${maxResults}`
+    const maxTotalResults = 200; // Google Books API's practical limit - it's the api's unofficial ceiling so please don't increase this recklessly
+    let allItems = [];
+
+    // Fetch in batches 200
+    while (allItems.length < maxTotalResults) {
+      const response = await axios.get(
+        `${process.env.GOOGLE_BOOKS_API_VOLUMES_URL}?q=intitle:${encodeURIComponent(q)}&startIndex=${allItems.length}&maxResults=40&key=${API_KEY}`
+      );
+      const newItems = response.data.items || [];
+      if (newItems.length === 0) break;
+      allItems = allItems.concat(newItems);
+    }
+
+    let filteredItems = allItems;
+    if (genre) filteredItems = filteredItems.filter(item => item.volumeInfo.categories?.includes(genre));
+    if (language) filteredItems = filteredItems.filter(item => item.volumeInfo.language === language);
+    if (ageGroup) {
+      const ageMappings = { 'Children': 'Juvenile', 'Young Adult': 'Young Adult', 'Adult': 'Adult' };
+      filteredItems = filteredItems.filter(item => item.volumeInfo.categories?.includes(ageMappings[ageGroup] || ageGroup));
+    }
+    if (bookLength) {
+      const lengthMappings = { 'Short (< 200 pages)': 200, 'Medium (200-400 pages)': 400, 'Long (> 400 pages)': 10000 };
+      const maxPages = lengthMappings[bookLength];
+      filteredItems = filteredItems.filter(item => item.volumeInfo.pageCount <= maxPages);
+    }
+    if (minYear || maxYear) {
+      filteredItems = filteredItems.filter(item => {
+        const pubYear = new Date(item.volumeInfo.publishedDate).getFullYear() || 0;
+        return (!minYear || pubYear >= minYear) && (!maxYear || pubYear <= maxYear);
+      });
+    }
+    if (minRating) filteredItems = filteredItems.filter(item => (item.volumeInfo.averageRating || 0) >= minRating);
+
+    
+    const paginatedItems = filteredItems.slice(startIndex, startIndex + maxResults);
+    const countResponse = await axios.get(
+      `${process.env.GOOGLE_BOOKS_API_VOLUMES_URL}?q=intitle:${encodeURIComponent(q)}&startIndex=0&maxResults=0&key=${API_KEY}`
     );
+    const rawTotal = countResponse.data.totalItems || 0;
     res.status(200).json({
-      items: response.data.items || [],
-      totalItems: response.data.totalItems || 0
+      items: paginatedItems,
+      totalItems: filteredItems.length,
+      rawTotal
     });
   } catch (error) {
     console.log(error);
     res.status(500).json({ error: 'Failed to fetch book details' });
   }
 };
+
+
 
 
 export const getNewReleasesByGenre = async (req, res) => {
