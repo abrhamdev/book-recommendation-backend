@@ -37,8 +37,11 @@ export const googleSignIn = async (req, res) => {
 
         if(users.length !== 0){
           const user = users[0];
+          const [preference] = await fetchPreference(users.id);
+          let landing;
+          if (preference.length != 0) { landing = true;} else { landing = false;}
           const token = generateToken(user.id);
-          return res.status(200).json({ message: 'User signed in successfully', token });
+          return res.status(200).json({ message: 'User signed in successfully', token ,landing});
         }
 
         await insertUser({
@@ -94,7 +97,8 @@ export const getUser= async(req,res)=>{
         id:users[0].id,
         name:users[0].name,
         email:users[0].email,
-        profile_picture:users[0].profile_picture
+        profile_picture:users[0].profile_picture,
+        role: users[0].role
        }
         return res.status(200).json({user});
 
@@ -137,8 +141,10 @@ export const getUsers= async(req,res)=>{
 }
 
 export const setPreference=async(req,res)=>{
+  const { userId } = req.body;
   try{
-       await insertPreference(req.body);
+       const preference = await fetchPreference(userId);
+       if(preference.length = 0) await insertPreference(req.body);
       return res.status(200).json({message:'Welcome To Nova Reads!'});
   }catch(error){
    return res.status(500).json({ message: 'Failed to save preference' });
