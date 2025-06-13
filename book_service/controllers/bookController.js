@@ -50,6 +50,9 @@ export const getBook = async (req, res) => {
       rating: bookData.volumeInfo.averageRating || 'N/A',
       description: bookData.volumeInfo.description || 'N/A',
       coverImage: bookData.volumeInfo.imageLinks?.thumbnail || 'https://via.placeholder.com/128x196.png?text=No+Cover',
+      previewLink: bookData.volumeInfo.previewLink || null,
+      viewability: bookData.accessInfo.viewability || "NO_PAGES",
+      industryIdentifiers: bookData.volumeInfo.industryIdentifiers || null
     };
     res.status(200).json(bookDetails);
   } catch (error) {
