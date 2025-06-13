@@ -163,7 +163,6 @@ export const getNewReleasesByGenre = async (req, res) => {
       rating: item.volumeInfo.averageRating || 'N/A',
       ratings: item.volumeInfo.ratingsCount ? `${(item.volumeInfo.ratingsCount / 1000).toFixed(1)}K` : '0'
     })) || [];
-    console.log("books",books);
 
     res.status(200).json(books);
   } catch (error) {
