@@ -51,6 +51,8 @@ app.post('/books/reading-list',proxy(process.env.BOOKS_SERVICE));
 app.get('/books/reading-list',proxy(process.env.BOOKS_SERVICE));
 app.patch('/books/reading-list/:bookId', proxy(process.env.BOOKS_SERVICE));
 app.delete('/books/reading-list/:bookId',proxy(process.env.BOOKS_SERVICE));
+app.post('/books/favorites/:bookId/toggle', proxy(process.env.BOOKS_SERVICE));
+app.get('/books/favorites', proxy(process.env.BOOKS_SERVICE));
 
 app.get(`/books/reviews/:id`,proxy(process.env.COMMUNITY_AND_REVIEW_SERVICE));
 app.post(`/books/setReview`,authMiddleware,proxy(process.env.COMMUNITY_AND_REVIEW_SERVICE));

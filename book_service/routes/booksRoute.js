@@ -10,6 +10,7 @@ import {
     removeFromReadingListController,
     checkBookInReadingListController
   } from "../controllers/readingListController.js";
+import { toggleFavoriteController, getFavoritesController } from "../controllers/favoriteController.js";
 import {authMiddleware} from '../middlewares/authMiddleware.js';
 
 const bookRouter=express.Router();
@@ -28,5 +29,7 @@ bookRouter.get('/reading-list', authMiddleware, getReadingListController);
 bookRouter.patch('/reading-list/:bookId', authMiddleware, updateReadingStatusController);
 bookRouter.delete('/reading-list/:bookId',authMiddleware, removeFromReadingListController);
 bookRouter.get('/reading-list/check/:bookId', authMiddleware, checkBookInReadingListController);
+bookRouter.post('/favorites/:bookId/toggle', authMiddleware, toggleFavoriteController);
+bookRouter.get('/favorites', authMiddleware, getFavoritesController);
 
 export default bookRouter;
