@@ -3,6 +3,15 @@ import { getTrending, getBook, search, getRelatedBooks, getNewReleasesByGenre, g
 import { getRecommendation } from "../controllers/recommendationController.js";
 import { uploadMiddleware, processFiles } from '../middlewares/FileUpload.js';
 import { checkBookExists} from '../middlewares/checkBookExists.js';
+import {
+    addToReadingListController,
+    getReadingListController,
+    updateReadingStatusController,
+    removeFromReadingListController,
+    checkBookInReadingListController
+  } from "../controllers/readingListController.js";
+import { toggleFavoriteController, getFavoritesController } from "../controllers/favoriteController.js";
+import {authMiddleware} from '../middlewares/authMiddleware.js';
 
 const bookRouter=express.Router();
 
@@ -14,5 +23,13 @@ bookRouter.get('/new-releases/:genre', getNewReleasesByGenre);
 bookRouter.get('/popular/:genre', getPopularByGenre);
 bookRouter.post('/recommend', getRecommendation);
 bookRouter.post('/insertbook', uploadMiddleware,checkBookExists, processFiles, insertBook);
+
+bookRouter.post('/reading-list', authMiddleware, addToReadingListController);
+bookRouter.get('/reading-list', authMiddleware, getReadingListController);
+bookRouter.patch('/reading-list/:bookId', authMiddleware, updateReadingStatusController);
+bookRouter.delete('/reading-list/:bookId',authMiddleware, removeFromReadingListController);
+bookRouter.get('/reading-list/check/:bookId', authMiddleware, checkBookInReadingListController);
+bookRouter.post('/favorites/:bookId/toggle', authMiddleware, toggleFavoriteController);
+bookRouter.get('/favorites', authMiddleware, getFavoritesController);
 
 export default bookRouter;
