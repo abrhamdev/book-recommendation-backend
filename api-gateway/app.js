@@ -27,7 +27,8 @@ app.use(cors({
   credentials: true
 }));
 
-app.use(express.json());
+app.use(express.json({ limit: '50mb' })); 
+app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 
 app.post('/users/signup', validateForm , proxy(process.env.USERS_SERVICE));
@@ -35,7 +36,10 @@ app.post('/users/login', proxy(process.env.USERS_SERVICE));
 app.post('/users/google-signin', proxy(process.env.USERS_SERVICE));
 app.post('/users/me',authMiddleware, proxy(process.env.USERS_SERVICE));
 app.post('/users/me/profile',authMiddleware, proxy(process.env.USERS_SERVICE));
+app.post('/users/me/updateProfile',authMiddleware, proxy(process.env.USERS_SERVICE));
 app.post('/users/me/preference',authMiddleware, proxy(process.env.USERS_SERVICE));
+app.post('/users/me/updatePreference',authMiddleware, proxy(process.env.USERS_SERVICE));
+app.post('/users/me/fetchPreferences',authMiddleware, proxy(process.env.USERS_SERVICE));
 
 app.post('/books/trending',proxy(process.env.BOOKS_SERVICE));
 app.get(`/books/getBook/:id`,proxy(process.env.BOOKS_SERVICE));
@@ -44,7 +48,20 @@ app.get(`/books/relatedBooks`,proxy(process.env.BOOKS_SERVICE));
 app.get(`/books/new-releases/:genre`,proxy(process.env.BOOKS_SERVICE));
 app.get(`/books/popular/:genre`,proxy(process.env.BOOKS_SERVICE));
 app.post(`/books/recommend`,authMiddleware,proxy(process.env.BOOKS_SERVICE));
-app.post(`/api/ethbooks/insertbook`,authMiddlewareForPopulation,proxy(process.env.BOOKS_SERVICE));
+app.post('/api/ethbooks/insertbook',
+  authMiddlewareForPopulation,
+  proxy(process.env.BOOKS_SERVICE, {
+    limit: '100mb', 
+    proxyReqBodyDecorator: (body, srcReq) => body,
+    proxyReqOptDecorator: function(proxyReqOpts, srcReq) {
+      proxyReqOpts.headers['Content-Type'] = srcReq.headers['content-type'];
+      return proxyReqOpts;
+    },
+    preserveReqSession: true,
+    parseReqBody: false // ✅ disables default body parsing (which fails for multipart)
+  })
+);
+
 
 //Authentication is handled in the service
 app.post('/books/reading-list',proxy(process.env.BOOKS_SERVICE));
