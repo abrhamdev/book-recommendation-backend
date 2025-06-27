@@ -5,7 +5,12 @@ import fs from 'fs';
 
 dotenv.config();
 
-const upload = multer({ dest: 'uploads/' });
+const upload = multer({
+  dest: 'uploads/',
+  limits: {
+    fileSize: 100 * 1024 * 1024, 
+  }
+});
 
 export const uploadMiddleware = upload.fields([
   { name: 'coverImage', maxCount: 1 },

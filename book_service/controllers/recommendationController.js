@@ -8,7 +8,15 @@ export const getRecommendation=async (req,res)=>{
   try{
     const userPreference = await axios.get(`${process.env.USERS_SERVICE}/users/me/getPreference?userId=${userId}`);
     const preference = userPreference.data;
-    const recommendations = await axios.post(`${process.env.RECOMMENDATION_ENGINE}/recommend`, preference);
+    const recommendations = await axios.post(
+      `${process.env.RECOMMENDATION_ENGINE}/recommend`,
+      preference,  // Your preference object (will be auto-converted to JSON)
+      {
+        headers: {
+          'Content-Type': 'application/json',  // Explicitly set JSON content type
+        },
+      }
+    );
     const recommendedISBNs = recommendations.data.books;
     //Fetch book details from Google Books API for each ISBN
       const books = await Promise.all(
