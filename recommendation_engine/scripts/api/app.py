@@ -90,7 +90,8 @@ def recommend_books():
         }), 200
 
     except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
+            print(f"Error in recommendation: {e}")
+            return jsonify({'error': 'Internal server error'}), 500
+            
 if __name__ == '__main__':
     app.run(debug=True, host='0.0.0.0', port=5000)
