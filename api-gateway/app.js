@@ -40,6 +40,16 @@ app.post('/users/me/updateProfile',authMiddleware, proxy(process.env.USERS_SERVI
 app.post('/users/me/preference',authMiddleware, proxy(process.env.USERS_SERVICE));
 app.post('/users/me/updatePreference',authMiddleware, proxy(process.env.USERS_SERVICE));
 app.post('/users/me/fetchPreferences',authMiddleware, proxy(process.env.USERS_SERVICE));
+app.post('/users/me/upload-profile-picture', proxy(process.env.USERS_SERVICE, {
+  limit: '100mb', 
+  proxyReqBodyDecorator: (body, srcReq) => body,
+  proxyReqOptDecorator: function(proxyReqOpts, srcReq) {
+    proxyReqOpts.headers['Content-Type'] = srcReq.headers['content-type'];
+    return proxyReqOpts;
+  },
+  preserveReqSession: true,
+  parseReqBody: false 
+}));
 
 app.post('/books/trending',proxy(process.env.BOOKS_SERVICE));
 app.get(`/books/getBook/:id`,proxy(process.env.BOOKS_SERVICE));
@@ -58,7 +68,7 @@ app.post('/api/ethbooks/insertbook',
       return proxyReqOpts;
     },
     preserveReqSession: true,
-    parseReqBody: false // ✅ disables default body parsing (which fails for multipart)
+    parseReqBody: false 
   })
 );
 
