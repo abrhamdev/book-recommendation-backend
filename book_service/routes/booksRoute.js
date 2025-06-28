@@ -1,5 +1,5 @@
 import express from "express";
-import { getTrending, getBook, search, getRelatedBooks, getNewReleasesByGenre, getPopularByGenre, insertBook} from "../controllers/bookController.js";
+import { getTrending, getBook, search, getRelatedBooks, getNewReleasesByGenre, getPopularByGenre, insertBook, getLocalBook  } from "../controllers/bookController.js";
 import { getRecommendation } from "../controllers/recommendationController.js";
 import { uploadMiddleware, processFiles } from '../middlewares/FileUpload.js';
 import { checkBookExists} from '../middlewares/checkBookExists.js';
@@ -23,6 +23,7 @@ bookRouter.get('/new-releases/:genre', getNewReleasesByGenre);
 bookRouter.get('/popular/:genre', getPopularByGenre);
 bookRouter.post('/recommend', getRecommendation);
 bookRouter.post('/insertbook', uploadMiddleware,checkBookExists, processFiles, insertBook);
+bookRouter.get('/local/:id', getLocalBook);
 
 bookRouter.post('/reading-list', authMiddleware, addToReadingListController);
 bookRouter.get('/reading-list', authMiddleware, getReadingListController);

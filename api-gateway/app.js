@@ -71,6 +71,7 @@ app.post('/api/ethbooks/insertbook',
     parseReqBody: false 
   })
 );
+app.get(`/books/local/:id`,proxy(process.env.BOOKS_SERVICE));
 
 
 //Authentication is handled in the service

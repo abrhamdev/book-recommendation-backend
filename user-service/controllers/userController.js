@@ -7,24 +7,25 @@ import { uploadToDrive } from "../middlewares/profileUploadToDrive.js";
 
 export const registerUser= async (req,res)=>{
     try{
-        const {fullName,email,password} = req.body;
+        const {fullName,email,password} = req.body;            
 
        const users=await checkUser(email);
         if(users.length !== 0){
           return res.status(400).json({message:"User Already found"});
         }
-        
+        console.log('User found!')
         const token = generateToken({ fullName, email, password });
-        await sendVerificationEmail(email, token);
+        //await sendVerificationEmail(email, token);
 
         const hashedPassword=await hashPassword(password);
 
-        await insertUser(fullName,email,hashedPassword);
+        await insertUser({fullName,email,password:hashedPassword});
+        console.log('User inserted!')
        return res.status(200).json({message:'user Signed up!'});
     }catch(error){
         console.log(error);
     }
-}
+}        
 
 export const googleSignIn = async (req, res) => {
   try {
