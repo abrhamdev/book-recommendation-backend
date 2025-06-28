@@ -50,7 +50,7 @@ export const searchEthBooks = async (query) => {
   }));
 };
 
-export const getEthBook = async(id) => {
+export const getEthBook = async (id) => {
   const [rows] = await connection.query(`
       SELECT 
         bookId as id,
@@ -66,12 +66,20 @@ export const getEthBook = async(id) => {
         path
       FROM ethbooks 
       WHERE bookId = ?`,
-      [id]
-    );
+    [id]
+  );
     
-    return rows.map(book => ({
-      ...book,
-      coverImageUrl: convertToDirectUrl(book.coverImage),
-      bookFileUrl: convertToDownloadUrl(book.path)
-    }));
+  return rows.map(book => ({
+    ...book,
+    coverImageUrl: convertToDirectUrl(book.coverImage),
+    bookFileUrl: convertToDownloadUrl(book.path)
+  }));
+}
+export const fetchAllBooks=async (title)=>{
+  try{
+    const [rows] = await connection.query('SELECT * FROM ethbooks')
+    return [rows];
+  }catch(error){
+    console.log(error);
+  }
 }

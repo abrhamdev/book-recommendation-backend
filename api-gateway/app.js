@@ -94,6 +94,9 @@ app.post(`/community/bookclub/members`,authMiddleware,proxy(process.env.COMMUNIT
 app.post(`/community/bookclub/join`,authMiddleware,proxy(process.env.COMMUNITY_AND_REVIEW_SERVICE));
 app.get(`/community/bookclub/fetchclubs`,proxy(process.env.COMMUNITY_AND_REVIEW_SERVICE));
 app.post(`/community/bookclub/messages`,authMiddleware,proxy(process.env.COMMUNITY_AND_REVIEW_SERVICE));
+app.post(`/community/bookclub/setcurrentbook`,authMiddleware,proxy(process.env.COMMUNITY_AND_REVIEW_SERVICE));
 
-
+app.get('/admin/stats', proxy(process.env.ADMIN_PANEL));
+app.get('/admin/fetchusers', proxy(process.env.ADMIN_PANEL));
 export default app;
+

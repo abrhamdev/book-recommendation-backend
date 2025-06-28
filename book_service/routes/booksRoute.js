@@ -1,5 +1,5 @@
 import express from "express";
-import { getTrending, getBook, search, getRelatedBooks, getNewReleasesByGenre, getPopularByGenre, insertBook, getLocalBook  } from "../controllers/bookController.js";
+import { getTrending, getBook, search, getRelatedBooks, getNewReleasesByGenre, getPopularByGenre, insertBook, getLocalBook,allBooks  } from "../controllers/bookController.js";
 import { getRecommendation } from "../controllers/recommendationController.js";
 import { uploadMiddleware, processFiles } from '../middlewares/FileUpload.js';
 import { checkBookExists} from '../middlewares/checkBookExists.js';
@@ -32,5 +32,6 @@ bookRouter.delete('/reading-list/:bookId',authMiddleware, removeFromReadingListC
 bookRouter.get('/reading-list/check/:bookId', authMiddleware, checkBookInReadingListController);
 bookRouter.post('/favorites/:bookId/toggle', authMiddleware, toggleFavoriteController);
 bookRouter.get('/favorites', authMiddleware, getFavoritesController);
+bookRouter.get('/getallbooks', allBooks);
 
 export default bookRouter;

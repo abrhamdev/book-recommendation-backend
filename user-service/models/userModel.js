@@ -145,3 +145,15 @@ export const updateProfiletoDb=async(userId,imageUrl)=>{
     console.log(error);
   }
 }
+
+export const fetchAllUser=async()=>{
+  try{
+    
+    const [users]=await connection.query(
+      ` SELECT * FROM users`
+    );
+     return [users]
+  }catch(error){
+    console.log(error);
+  }
+}

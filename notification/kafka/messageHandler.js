@@ -4,13 +4,16 @@ export async function handleKafkaMessage(message) {
   try {
     const data = JSON.parse(message.value.toString());
 
-    /* Save the notification to DB
-    await saveNotification({
-      type: 'BOOK_REPORT_ALERT',
-      payload: data, // You can adjust depending on the schema
-    });
-     */
+    const enrichedNotification = {
+          type: 'BOOK_REPORT_ALERT',
+          userId: data.userId,
+          bookId: data.bookId,
+          reportCount: data.reportCount,
+          reportReason: data.reportReason,
+          message: `This book has been reported ${data.reportCount} time(s). Reason: ${data.reportReason}`,
+        };
      
+     await saveNotification(enrichedNotification);
 
     console.log('Notification saved from Kafka message:', data);
   } catch (err) {

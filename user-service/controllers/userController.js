@@ -1,5 +1,5 @@
 import hashPassword from "../services/hashPassword.js";
-import { checkUser, fetchPreference, fetchUser, fetchusers, insertPreference, insertUser, updatePreferences, updateProf, updateProfiletoDb } from "../models/userModel.js";
+import { checkUser, fetchAllUser, fetchPreference, fetchUser, fetchusers, insertPreference, insertUser, updatePreferences, updateProf, updateProfiletoDb } from "../models/userModel.js";
 import { generateToken } from "../services/authService.js";
 import bcrypt from 'bcrypt';
 import { sendVerificationEmail } from "../services/emailService.js";
@@ -229,6 +229,16 @@ export const upload_profile=async(req,res)=>{
     } catch (error) {
       return res.status(500).json({message:"Internal server error"});
       console.error("Error updating profile picture:", error);
+      throw error;
+    }
+}
+
+export const allusers=async(req,res)=>{
+  try {
+    const [allusers]=await fetchAllUser();
+      return res.status(200).json(allusers);
+    } catch (error) {
+      return res.status(500).json({message:"Internal server error"});
       throw error;
     }
 }

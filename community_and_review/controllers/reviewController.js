@@ -1,5 +1,5 @@
 import { response } from "express";
-import { checkReview, checkReviewReaction, checkUserReport, fetchReviews, insertReaction, insertReply, insertReview, insertReviewReport, updateReaction } from "../models/reviewModels.js";
+import { checkReview, checkReviewReaction, checkUserReport, fetchAllReviews, fetchReviews, insertReaction, insertReply, insertReview, insertReviewReport, updateReaction } from "../models/reviewModels.js";
 import axios from 'axios';
 
 export const setReview=async (req, res) => {
@@ -93,5 +93,16 @@ export const reply=async(req,res)=>{
     }catch(error){
       console.log(error);
       res.status(400).json({message:"Failed to Reply"});
+    }
+}
+
+export const allReview=async(req,res)=>{
+
+  try {
+      const [reviews] =await fetchAllReviews();
+       res.status(200).json(reviews);
+    }catch(error){
+      console.log(error);
+      res.status(400).json({message:"Failed to fetch reviews"});
     }
 }

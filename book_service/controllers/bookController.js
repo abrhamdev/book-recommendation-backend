@@ -1,6 +1,6 @@
 import axios from 'axios';
 import dotenv from 'dotenv';
-import { addbook, searchEthBooks, getEthBook  } from "../models/BookModel.js";
+import { addbook, searchEthBooks, getEthBook,fetchAllBooks  } from "../models/BookModel.js";
 
 dotenv.config();
 
@@ -293,6 +293,16 @@ export const insertBook = async (req, res) => {
     await addbook(title, author, publisher, language,publicationYear, genre, description, pageCount, coverImageUrl, bookFileUrl)
 
     res.status(201).json({ message: 'Book inserted successfully' });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'DB insert failed' });
+  }
+};
+
+export const allBooks = async (req, res) => {
+  try {
+    const [books] = await fetchAllBooks();
+    res.status(201).json(books);
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'DB insert failed' });
