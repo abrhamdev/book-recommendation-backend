@@ -141,6 +141,57 @@ export const getUsers= async(req,res)=>{
   }
 }
 
+
+
+export const changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const {userId} = req;
+    console.log("User id: ", userId)
+
+    // Validate required fields
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({ message: "Current and new password are required" });
+      
+    }
+
+    // Fetch user from database
+    const [users] = await fetchUser(userId);
+    if (users.length === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    const user = users[0];
+
+    // Verify current password matches (only for local auth users)
+    if (user.auth_provider === 'local') {
+      const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+      if (!isPasswordValid) {
+        return res.status(401).json({ message: "Current password is incorrect" });
+      }
+    }
+
+    // Validate new password meets requirements
+    if (newPassword.length < 8) {
+      return res.status(400).json({ 
+        message: "Password must be at least 8 characters with a number and special character"
+      });
+    }
+
+    // Hash and update the new password
+    const hashedPassword = await hashPassword(newPassword);
+    await updateUserPassword(userId, hashedPassword);
+
+    return res.status(200).json({ message: "Password updated successfully" });
+
+  } catch (error) {
+    console.error("Password change error:", error);
+    return res.status(500).json({ message: "Internal server error" });
+  }
+};
+
+
+
 export const setPreference=async(req,res)=>{
   const { userId } = req.body;
   try{
