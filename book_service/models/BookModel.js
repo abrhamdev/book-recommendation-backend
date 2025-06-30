@@ -77,7 +77,23 @@ export const getEthBook = async (id) => {
 }
 export const fetchAllBooks=async (title)=>{
   try{
-    const [rows] = await connection.query('SELECT * FROM ethbooks')
+    const [rows] = await connection.query(`SELECT 
+      bookId,
+      Title,
+      Author,
+      Publisher,
+      Language,
+      YEAR(PublicationYear),
+      Genre,
+      Description,
+      pageCount,
+      coverImage
+    FROM ethbooks`);
+    
+    rows.map(book => ({
+      ...book,
+      coverImage: convertToDirectUrl(book.coverImage)
+    }));
     return [rows];
   }catch(error){
     console.log(error);

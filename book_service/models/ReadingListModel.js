@@ -132,3 +132,17 @@ export const isBookInReadingList = async (userId, bookId) => {
         throw new Error('Failed to check reading list');
     }
 };
+
+export const fetchAllReadingList = async (userId, bookId) => {
+    const query = `
+        SELECT * FROM reading_list
+    `;
+    
+    try {
+        const [rows] = await connection.query(query);
+      return [rows];
+    } catch (error) {
+        console.error('Error fetching reading list:', error);
+        throw new Error('Failed to check reading list');
+    }
+};

@@ -305,6 +305,6 @@ export const allBooks = async (req, res) => {
     res.status(201).json(books);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'DB insert failed' });
+    res.status(500).json({ error: 'failed to fetch eth books' });
   }
 };

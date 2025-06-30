@@ -8,7 +8,8 @@ import {
     getReadingListController,
     updateReadingStatusController,
     removeFromReadingListController,
-    checkBookInReadingListController
+    checkBookInReadingListController,
+    fetchReadingList
   } from "../controllers/readingListController.js";
 import { toggleFavoriteController, getFavoritesController } from "../controllers/favoriteController.js";
 import {authMiddleware} from '../middlewares/authMiddleware.js';
@@ -33,5 +34,6 @@ bookRouter.get('/reading-list/check/:bookId', authMiddleware, checkBookInReading
 bookRouter.post('/favorites/:bookId/toggle', authMiddleware, toggleFavoriteController);
 bookRouter.get('/favorites', authMiddleware, getFavoritesController);
 bookRouter.get('/getallbooks', allBooks);
+bookRouter.get('/reading-list', authMiddleware,fetchReadingList);
 
 export default bookRouter;
