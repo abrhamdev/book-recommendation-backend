@@ -1,5 +1,5 @@
 import express from "express";
-import { registerUser,googleSignIn,login, getUser, getProfile, getUsers, setPreference, getPreference, fetchPreferences, updatePreference, updateProfile, upload_profile, allusers } from "../controllers/userController.js";
+import { registerUser,googleSignIn,login, getUser, getProfile, getUsers, setPreference, getPreference,changePassword, fetchPreferences, updatePreference, updateProfile, upload_profile, allusers } from "../controllers/userController.js";
 import { upload } from '../middlewares/multer.js';
 import { authMiddleware } from "../middlewares/authMiddleware.js";
 
@@ -10,6 +10,7 @@ userRouter.post('/google-signin',googleSignIn);
 userRouter.post('/login',login);
 userRouter.post('/me',getUser);
 userRouter.post('/me/profile',getProfile);
+userRouter.post('/change-password', changePassword);
 userRouter.post('/me/updateProfile',updateProfile);
 userRouter.post('/bulk',getUsers);
 userRouter.post('/me/preference',setPreference);

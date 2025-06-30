@@ -55,6 +55,14 @@ export const fetchusers=async(userIds)=>{
   }
 }
 
+
+export const updateUserPassword = async (userId, newPassword) => {
+  const [result] = await connection.query(
+    "UPDATE users SET password = ? WHERE id = ?",
+    [newPassword, userId]
+  );
+  return result;
+};
 export const updatePreferences=async(preferences)=>{
   try {
     const {
