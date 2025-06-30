@@ -7,6 +7,7 @@ import {
     isBookInReadingList,
     fetchAllReadingList
   } from "../models/ReadingListModel.js";
+  import {getEthBook} from '../models/BookModel.js';
 import axios from 'axios';
 import dotenv from 'dotenv';
 dotenv.config();  
@@ -34,32 +35,34 @@ dotenv.config();
       // Fetch book details from Google Books API
       const enrichedList = await Promise.all(readingList.map(async (item) => {
         try {
+          const response = await getEthBook(item.bookId.replace('local-', ''));
           // Use ethbooks data if available
-          if (item.ethTitle) {
+          if (response.length > 0) {
             return {
               ...item,
-              title: item.ethTitle,
-              author: item.ethAuthor,
-              coverImage: item.ethCoverImage || 'https://via.placeholder.com/128x196.png?text=No+Cover',
-              pageCount: item.ethPageCount || 0,
-              description: item.ethDescription || ''
+              title: response[0].title,
+              author: response[0].author,
+              coverImage: response[0].coverImageUrl || 'https://via.placeholder.com/128x196.png?text=No+Cover',
+              pageCount: response[0].pageCount || 0,
+              description: response[0].description || ''
             };
           }
-  
-          // Fetch from Google Books API
-          const response = await axios.get(
-            `https://www.googleapis.com/books/v1/volumes/${item.bookId}?key=${process.env.GOOGLE_BOOKS_API_KEY}`
-          );
-          
-          const bookData = response.data.volumeInfo;
-          return {
-              ...item,
-              title: bookData.title || 'N/A',
-              author: bookData.authors?.join(', ') || 'N/A',
-              coverImage: bookData.imageLinks?.thumbnail || 'https://via.placeholder.com/128x196.png?text=No+Cover',
-              pageCount: bookData.pageCount || 0,
-              description: bookData.description || ''
-          };
+          else{
+            // Fetch from Google Books API
+            const response = await axios.get(
+              `https://www.googleapis.com/books/v1/volumes/${item.bookId}?key=${process.env.GOOGLE_BOOKS_API_KEY}`
+            );
+            
+            const bookData = response.data.volumeInfo;
+            return {
+                ...item,
+                title: bookData.title || 'N/A',
+                author: bookData.authors?.join(', ') || 'N/A',
+                coverImage: bookData.imageLinks?.thumbnail || 'https://via.placeholder.com/128x196.png?text=No+Cover',
+                pageCount: bookData.pageCount || 0,
+                description: bookData.description || ''
+            };
+          }
         } catch (error) {
           console.error(`Failed to fetch details for book ${item.bookId}:`, error);
           return {
