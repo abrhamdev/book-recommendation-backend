@@ -40,3 +40,45 @@ export async function uploadToDrive(file, folderId) {
   const fileUrl = `https://drive.google.com/uc?id=${response.data.id}`;
   return fileUrl;
 }
+
+export const convertToDirectUrl = (driveUrl) => {
+  // Extract file ID from various Google Drive URL formats
+  const patterns = [
+    /\/file\/d\/([^\/]+)/,         // Standard shareable link
+    /id=([^&]+)/,                   // UC parameter format
+    /\/thumbnail\?id=([^&]+)/,      // Thumbnail format
+    /\/open\?id=([^&]+)/,           // Open format
+    /\/uc\?id=([^&]+)/              // Direct UC format
+  ];
+  
+  for (const pattern of patterns) {
+    const match = driveUrl.match(pattern);
+    if (match && match[1]) {
+      // Use this format for reliable image access
+      return `https://lh3.googleusercontent.com/d/${match[1]}=s400`;
+    }
+  }
+  
+  // Fallback to original URL
+  return driveUrl;
+};
+
+export const convertToDownloadUrl = (driveUrl) => {
+  // Same extraction logic as above
+  const patterns = [
+    /\/file\/d\/([^\/]+)/,
+    /id=([^&]+)/,
+    /\/thumbnail\?id=([^&]+)/,
+    /\/open\?id=([^&]+)/,
+    /\/uc\?id=([^&]+)/
+  ];
+  
+  for (const pattern of patterns) {
+    const match = driveUrl.match(pattern);
+    if (match && match[1]) {
+      return `https://drive.google.com/uc?export=download&id=${match[1]}`;
+    }
+  }
+  
+  return driveUrl;
+};

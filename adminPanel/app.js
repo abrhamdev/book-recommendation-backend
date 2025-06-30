@@ -1,7 +1,7 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
-import connectMongoDB from './config/mongodb.js';
+import adminRouter from './routes/adminRoutes.js';
 
 dotenv.config();
 
@@ -9,6 +9,7 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
-connectMongoDB();
+
+app.use('/admin', adminRouter);
 
 export default app;

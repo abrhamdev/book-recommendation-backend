@@ -16,6 +16,28 @@ export const createBookClub=async(req,res)=>{
 export const getClubs=async(req,res)=>{
     try{
         const [clubs]=await fetchClubs();
+        /*const clubsWithBooks = await Promise.all(clubs.map(async (club) => {
+              if (club.current_book_id && club.current_book_id !== 'null') {
+                try {
+                  const response = await axios.get(`${process.env.BOOKS_SERVICE}/books/getBook/${club.current_book_id}`);
+                  return {
+                    ...club,
+                    current_book: response.data.book || null, // Adjust this depending on the actual API response
+                  };
+                } catch (err) {
+                  console.error(`Error fetching book for club ID ${club.id}:`, err.message);
+                  return {
+                    ...club,
+                    current_book: null, // In case of failure, still return the club
+                  };
+                }
+              } else {
+                return {
+                  ...club,
+                  current_book: null, // No book ID provided
+                };
+              }
+            }));*/
         return res.status(200).json({clubs});
     }catch(error){
       console.log(error);
@@ -98,6 +120,18 @@ export const getMessages=async(req,res)=>{
       }
   }));
     return res.status(200).json({messages});
+  }catch(error){
+    console.log(error);
+  }
+}
+
+export const setCurrentBook=async(req,res)=>{
+  const {book}=req.body;
+  try
+  {
+    console.log(book);
+    
+    return res.status(200).json({});
   }catch(error){
     console.log(error);
   }

@@ -123,3 +123,13 @@ export const insertReply=async(userID,reviewID,replyText)=>{
     console.log(error);
   }
 }
+
+export const fetchAllReviews=async()=>{
+  try{
+      const query = 'SELECT * FROM reviews';
+    const [reviews] =await connection.query(query);
+    return [reviews];
+  }catch(error){
+    console.log(error);
+  }
+}

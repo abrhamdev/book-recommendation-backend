@@ -19,7 +19,7 @@ export const reportBook=async(req,res)=>{
            // Send Kafka message when reportCount reaches threshold (or for testing, when it's 1)
               if (reportCount === 1) {
                 await produceMessage(BOOK_REPORT_ALERTS, [
-                  { value: JSON.stringify({ id, reportCount,reportReason }) },
+                  { value: JSON.stringify({ userId,bookId:id, reportCount,reportReason }) },
                 ]);
                 console.log(`Kafka message produced for bookId ${id} with reportCount ${reportCount}`);
               }

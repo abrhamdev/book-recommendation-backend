@@ -1,6 +1,6 @@
 import axios from 'axios';
 import dotenv from 'dotenv';
-import { addbook } from "../models/BookModel.js";
+import { addbook, searchEthBooks, getEthBook,fetchAllBooks  } from "../models/BookModel.js";
 
 dotenv.config();
 
@@ -91,13 +91,29 @@ export const getRelatedBooks = async (req, res) => {
 export const search = async (req, res) => {
   const { q, startIndex = 0, maxResults = 10, genre, language, ageGroup, bookLength, minYear, maxYear, minRating } = req.query;
   try {
-    const maxTotalResults = 200; // Google Books API's practical limit - it's the api's unofficial ceiling so please don't increase this recklessly
-    let allItems = [];
+    // 1. First search local Amharic books
+    const localBooksRaw = await searchEthBooks(q);
+    const localBooks = formatLocalBooks(localBooksRaw);
+    
+    // If we have enough local results, return them immediately
+    if (localBooks.length >= maxResults) {
+      const paginatedItems = localBooks.slice(startIndex, startIndex + maxResults);
+      return res.status(200).json({
+        items: paginatedItems,
+        totalItems: localBooks.length,
+        rawTotal: localBooks.length,
+        source: 'local'
+      });
+    }
 
-    // Fetch in batches 200
-    while (allItems.length < maxTotalResults) {
+    // 2. If not enough local books, search Google Books
+    const maxTotalResults = 200;
+    let allItems = [...localBooks]; // Start with local books
+    
+    // Fetch from Google API
+    while (allItems.length - localBooks.length < maxTotalResults - localBooks.length) {
       const response = await axios.get(
-        `${process.env.GOOGLE_BOOKS_API_VOLUMES_URL}?q=intitle:${encodeURIComponent(q)}&startIndex=${allItems.length}&maxResults=40&key=${API_KEY}`
+        `${process.env.GOOGLE_BOOKS_API_VOLUMES_URL}?q=intitle:${encodeURIComponent(q)}&startIndex=${allItems.length - localBooks.length}&maxResults=40&key=${API_KEY}`
       );
       const newItems = response.data.items || [];
       if (newItems.length === 0) break;
@@ -126,14 +142,21 @@ export const search = async (req, res) => {
 
     
     const paginatedItems = filteredItems.slice(startIndex, startIndex + maxResults);
-    const countResponse = await axios.get(
-      `${process.env.GOOGLE_BOOKS_API_VOLUMES_URL}?q=intitle:${encodeURIComponent(q)}&startIndex=0&maxResults=0&key=${API_KEY}`
-    );
-    const rawTotal = countResponse.data.totalItems || 0;
+    
+    // Get count from Google API
+    let rawTotal = localBooks.length;
+    if (allItems.length > localBooks.length) {
+      const countResponse = await axios.get(
+        `${process.env.GOOGLE_BOOKS_API_VOLUMES_URL}?q=intitle:${encodeURIComponent(q)}&startIndex=0&maxResults=0&key=${API_KEY}`
+      );
+      rawTotal = (countResponse.data.totalItems || 0) + localBooks.length;
+    }
+
     res.status(200).json({
       items: paginatedItems,
       totalItems: filteredItems.length,
-      rawTotal
+      rawTotal,
+      source: allItems.length > localBooks.length ? 'mixed' : 'local'
     });
   } catch (error) {
     console.log(error);
@@ -141,8 +164,65 @@ export const search = async (req, res) => {
   }
 };
 
+// Add this function to get a single local book
+export const getLocalBook = async (req, res) => {
+  const { id } = req.params;
+  
+  try {
+    const rows = await getEthBook(id);
 
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Local book not found' });
+    }
 
+    const book = rows[0];
+    
+    const bookDetails = {
+      id: `local-${book.id}`,
+      title: book.title,
+      author: book.author,
+      genres: book.genre,
+      publisher: book.publisher,
+      publicationDate: book.publicationYear,
+      pageCount: book.pageCount,
+      language: book.language,
+      rating: 'N/A',
+      description: book.description,
+      coverImage: book.coverImageUrl,
+      previewLink: book.bookFileUrl,
+      viewability: "FULL",
+      industryIdentifiers: null
+    };
+
+    res.status(200).json(bookDetails);
+  } catch (error) {
+    console.error('Error fetching local book:', error);
+    res.status(500).json({ error: 'Failed to fetch local book details' });
+  }
+};
+
+const formatLocalBooks = (localBooks) => {
+  return localBooks.map(book => ({
+    id: `local-${book.id}`,
+    volumeInfo: {
+      title: book.title,
+      authors: [book.author],
+      publisher: book.publisher,
+      language: book.language,
+      publishedDate: book.publicationYear?.toString(),
+      categories: [book.genre],
+      description: book.description,
+      pageCount: book.pageCount,
+      imageLinks: {
+        thumbnail: book.coverImageUrl
+      }
+    },
+    accessInfo: {
+      viewability: "FULL",
+      webReaderLink: book.bookFileUrl
+    }
+  }));
+};
 
 export const getNewReleasesByGenre = async (req, res) => {
   const { genre } = req.params;
@@ -216,5 +296,15 @@ export const insertBook = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: 'DB insert failed' });
+  }
+};
+
+export const allBooks = async (req, res) => {
+  try {
+    const [books] = await fetchAllBooks();
+    res.status(201).json(books);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'failed to fetch eth books' });
   }
 };

@@ -4,7 +4,8 @@ import {
     updateReadingStatus,
     removeFromReadingList,
     updateReadingProgress,
-    isBookInReadingList
+    isBookInReadingList,
+    fetchAllReadingList
   } from "../models/ReadingListModel.js";
 import axios from 'axios';
 import dotenv from 'dotenv';
@@ -125,3 +126,14 @@ dotenv.config();
       res.status(500).json({ error: error.message || 'Failed to check reading list' });
     }
   };
+  
+  export const fetchReadingList = async (req, res) => {
+    try {
+      const [readinglists] = await fetchAllReadingList();
+      res.status(200).json({listcount:readinglists.length });
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: error.message || 'Failed to check reading list' });
+    }
+  };
+  

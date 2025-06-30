@@ -34,6 +34,15 @@ export const fetchUser=async(userId)=>{
   }
 }
 
+export const updateProf=async(data)=>{
+  try{
+       const query = `UPDATE users SET name=?,email=?,birth_date=?,location=? WHERE id = ?`;
+       const [users]=await connection.execute(query,[data.name,data.email,data.birth_date,data.location,data.userId]);
+  }catch(err){
+      throw new Error(err);
+  }
+}
+
 export const fetchusers=async(userIds)=>{
   try{
     const [users] = await connection.query(
@@ -46,6 +55,7 @@ export const fetchusers=async(userIds)=>{
   }
 }
 
+
 export const updateUserPassword = async (userId, newPassword) => {
   const [result] = await connection.query(
     "UPDATE users SET password = ? WHERE id = ?",
@@ -53,9 +63,42 @@ export const updateUserPassword = async (userId, newPassword) => {
   );
   return result;
 };
+export const updatePreferences=async(preferences)=>{
+  try {
+    const {
+      languages,
+      genres,
+      ageGroup,
+      bookLength,
+      authors,
+      userId,
+    } = preferences;
+    
+    await connection.execute(
+      `UPDATE preferences
+      SET
+          age_group = ?,
+          book_length = ?,
+          languages = ?,
+          genres = ?,
+          authors = ?
+      WHERE user_id = ?`,
+      [
+        ageGroup,
+        bookLength,
+        languages,
+        genres,
+        authors,
+        userId,
+      ]
+    );
+    
+  } catch (err) {
+    throw new Error(err.message);
+  }
+}
 
 export const insertPreference=async(preferences)=>{
-  console.log(preferences);
   try {
     const {
       languages,
@@ -92,6 +135,32 @@ export const fetchPreference=async(userId)=>{
       [userId]
     );
     return [preferences];
+  }catch(error){
+    console.log(error);
+  }
+}
+export const updateProfiletoDb=async(userId,imageUrl)=>{
+  try{
+    
+    await connection.query(
+      ` UPDATE users
+            SET profile_picture = ?
+            WHERE id = ?;
+          `,
+      [imageUrl,userId]
+    );
+  }catch(error){
+    console.log(error);
+  }
+}
+
+export const fetchAllUser=async()=>{
+  try{
+    
+    const [users]=await connection.query(
+      ` SELECT * FROM users`
+    );
+     return [users]
   }catch(error){
     console.log(error);
   }

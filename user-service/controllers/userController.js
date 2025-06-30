@@ -1,8 +1,9 @@
 import hashPassword from "../services/hashPassword.js";
-import { checkUser, fetchPreference, fetchUser, fetchusers, insertPreference, insertUser } from "../models/userModel.js";
+import { checkUser, fetchAllUser, fetchPreference, fetchUser, fetchusers, insertPreference, insertUser, updatePreferences, updateProf, updateProfiletoDb } from "../models/userModel.js";
 import { generateToken } from "../services/authService.js";
 import bcrypt from 'bcrypt';
 import { sendVerificationEmail } from "../services/emailService.js";
+import { uploadToDrive } from "../middlewares/profileUploadToDrive.js";
 
 export const registerUser= async (req,res)=>{
     try{
@@ -38,11 +39,11 @@ export const googleSignIn = async (req, res) => {
 
         if(users.length !== 0){
           const user = users[0];
-          const [preference] = await fetchPreference(users.id);
+          const [preference] = await fetchPreference(user.id);
           let landing;
-          if (preference.length != 0) { landing = true;} else { landing = false;}
+          if (preference.length != 0) { landing = false;} else { landing = true;}
           const token = generateToken(user.id);
-          return res.status(200).json({ message: 'User signed in successfully', token ,landing});
+          return res.status(200).json({ message: 'User signed in successfully', token ,landing,role:user.role});
         }
 
         await insertUser({
@@ -56,9 +57,9 @@ export const googleSignIn = async (req, res) => {
         const newUser = await checkUser(email);
         const token = generateToken(newUser[0].id);
     
-        return res.status(201).json({ message: 'Login successfull', token });
+        return res.status(201).json({ message: 'Login successfull', token,role:newUser.role });
   } catch (error) {
-    console.error(error.message);
+    console.error(error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -73,7 +74,6 @@ export const login= async(req,res)=>{
         }
 
         const user=users[0];
-
         const isPasswordValid = await bcrypt.compare(password, user.password);
 
         if (!isPasswordValid) {
@@ -81,7 +81,7 @@ export const login= async(req,res)=>{
         }
        
         const token = generateToken(user.id);
-        return res.status(200).json({ message: "Login successful", token });
+        return res.status(200).json({ message: "Login successful", token,role:user.role});
 
   }catch(error){
     console.log(error);
@@ -94,14 +94,42 @@ export const getUser= async(req,res)=>{
         const {userId}=req.body;
 
        const [users]=await fetchUser(userId);
+       
+       const convertToDirectUrl = (driveUrl) => {
+         // Extract file ID from various Google Drive URL formats
+         const patterns = [
+           /\/file\/d\/([^\/]+)/,         // Standard shareable link
+           /id=([^&]+)/,                   // UC parameter format
+           /\/thumbnail\?id=([^&]+)/,      // Thumbnail format
+           /\/open\?id=([^&]+)/,           // Open format
+           /\/uc\?id=([^&]+)/              // Direct UC format
+         ];
+         
+         for (const pattern of patterns) {
+           const match = driveUrl.match(pattern);
+           if (match && match[1]) {
+             // Use this format for reliable image access
+             return `https://lh3.googleusercontent.com/d/${match[1]}=s400`;
+           }
+         }
+         
+         // Fallback to original URL
+         return driveUrl;
+       };
+       
+    const profileurl = convertToDirectUrl(users[0].profile_picture);
+       
        const user={
         id:users[0].id,
         name:users[0].name,
         email:users[0].email,
-        profile_picture:users[0].profile_picture,
+        profile_picture:profileurl,
         role: users[0].role
        }
-        return res.status(200).json({user});
+       const [preference] = await fetchPreference(user.id);
+       let landing;
+       if (preference.length != 0) { landing = false;} else { landing = true;}
+        return res.status(200).json({user,landing});
 
   }catch(error){
     console.log(error);
@@ -130,6 +158,17 @@ export const getProfile= async(req,res)=>{
    return res.status(500).json({ message: "Internal server error" });
   }
 }
+
+export const updateProfile= async(req,res)=>{
+  try{
+    await updateProf(req.body);
+    return res.status(200).json({ message: "profile updated" });
+  }catch(error){
+    console.log(error);
+   return res.status(500).json({ message: "Internal server error" });
+  }
+}
+
 
 export const getUsers= async(req,res)=>{
   const { userIds } = req.body;
@@ -195,10 +234,22 @@ export const changePassword = async (req, res) => {
 export const setPreference=async(req,res)=>{
   const { userId } = req.body;
   try{
-       const preference = await fetchPreference(userId);
-       if(preference.length = 0) await insertPreference(req.body);
+       const [preference] = await fetchPreference(userId);
+       if(preference.length == 0) await insertPreference(req.body);
       return res.status(200).json({message:'Welcome To Nova Reads!'});
   }catch(error){
+   return res.status(500).json({ message: 'Failed to save preference' });
+  }
+}
+
+export const updatePreference=async(req,res)=>{
+  const { userId } = req.body;
+  try{
+       const [preference] = await fetchPreference(userId);
+       if(preference.length != 0) await updatePreferences(req.body);
+      return res.status(200).json({message:'preference updated'});
+  }catch(error){
+    console.log(error);
    return res.status(500).json({ message: 'Failed to save preference' });
   }
 }
@@ -211,4 +262,36 @@ export const getPreference=async(req,res)=>{
   }catch(error){
    return res.status(500).json({ message: 'Failed to get preference' });
   }
+}
+
+export const fetchPreferences=async(req,res)=>{
+  const { userId } = req.body;
+  try{
+    const [preference] = await fetchPreference(userId);
+    return res.status(200).json(preference[0]);
+  }catch(error){
+   return res.status(500).json({ message: 'Failed to get preference' });
+  }
+}
+
+export const upload_profile=async(req,res)=>{
+  const driveImageUrl = await uploadToDrive(req.file);
+  try {
+    await updateProfiletoDb(req.userId, driveImageUrl);
+      return res.status(200).json({message:"profile uploaded"});
+    } catch (error) {
+      return res.status(500).json({message:"Internal server error"});
+      console.error("Error updating profile picture:", error);
+      throw error;
+    }
+}
+
+export const allusers=async(req,res)=>{
+  try {
+    const [allusers]=await fetchAllUser();
+      return res.status(200).json(allusers);
+    } catch (error) {
+      return res.status(500).json({message:"Internal server error"});
+      throw error;
+    }
 }
