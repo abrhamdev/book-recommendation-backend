@@ -38,7 +38,7 @@ def recommend():
         if book['id'] in read_ids:
             continue
         recs.append(
-        {
+        {   'id':book.get('id',''),
             'title': book.get('title', ''),
             'authors': [book.get('authors', [])] or [],
             'description': book.get('description', '') or '',

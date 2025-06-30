@@ -1,5 +1,5 @@
 import hashPassword from "../services/hashPassword.js";
-import { checkUser, fetchAllUser, fetchPreference, fetchUser, fetchusers, insertPreference, insertUser, updatePreferences, updateProf, updateProfiletoDb } from "../models/userModel.js";
+import { checkUser, fetchAllUser, fetchPreference, fetchUser, fetchusers, insertPreference, insertUser, updatePreferences, updateProf, updateProfiletoDb, updateUserPassword } from "../models/userModel.js";
 import { generateToken } from "../services/authService.js";
 import bcrypt from 'bcrypt';
 import { sendVerificationEmail } from "../services/emailService.js";
@@ -79,9 +79,11 @@ export const login= async(req,res)=>{
         if (!isPasswordValid) {
           return res.status(401).json({ message: "Invalid password" });
         }
-       
+        const [preference] = await fetchPreference(user.id);
+        let landing;
+        if (preference.length != 0) { landing = false;} else { landing = true;}
         const token = generateToken(user.id);
-        return res.status(200).json({ message: "Login successful", token,role:user.role});
+        return res.status(200).json({ message: "Login successful", token,role:user.role,landing});
 
   }catch(error){
     console.log(error);
@@ -106,7 +108,7 @@ export const getUser= async(req,res)=>{
          ];
          
          for (const pattern of patterns) {
-           const match = driveUrl.match(pattern);
+           const match = driveUrl?.match(pattern);
            if (match && match[1]) {
              // Use this format for reliable image access
              return `https://lh3.googleusercontent.com/d/${match[1]}=s400`;
@@ -185,8 +187,7 @@ export const getUsers= async(req,res)=>{
 export const changePassword = async (req, res) => {
   try {
     const { currentPassword, newPassword } = req.body;
-    const {userId} = req;
-    console.log("User id: ", userId)
+    const userId = req.userId;
 
     // Validate required fields
     if (!currentPassword || !newPassword) {
@@ -204,7 +205,7 @@ export const changePassword = async (req, res) => {
 
     // Verify current password matches (only for local auth users)
     if (user.auth_provider === 'local') {
-      const isPasswordValid = await bcrypt.compare(currentPassword, user.password);
+      const isPasswordValid = await bcrypt.compare(currentPassword, user?.password);
       if (!isPasswordValid) {
         return res.status(401).json({ message: "Current password is incorrect" });
       }

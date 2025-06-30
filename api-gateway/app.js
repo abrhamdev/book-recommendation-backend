@@ -33,6 +33,7 @@ app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
 app.post('/users/signup', validateForm , proxy(process.env.USERS_SERVICE));
 app.post('/users/login', proxy(process.env.USERS_SERVICE));
+app.post('/users/change-password', proxy(process.env.USERS_SERVICE));
 app.post('/users/google-signin', proxy(process.env.USERS_SERVICE));
 app.post('/users/me',authMiddleware, proxy(process.env.USERS_SERVICE));
 app.post('/users/me/profile',authMiddleware, proxy(process.env.USERS_SERVICE));

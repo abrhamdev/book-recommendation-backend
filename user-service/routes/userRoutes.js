@@ -10,7 +10,7 @@ userRouter.post('/google-signin',googleSignIn);
 userRouter.post('/login',login);
 userRouter.post('/me',getUser);
 userRouter.post('/me/profile',getProfile);
-userRouter.post('/change-password', changePassword);
+userRouter.post('/change-password',authMiddleware, changePassword);
 userRouter.post('/me/updateProfile',updateProfile);
 userRouter.post('/bulk',getUsers);
 userRouter.post('/me/preference',setPreference);

@@ -37,7 +37,8 @@ export const getRecommendation = async (req, res) => {
     // Transform local recommendations, converting thumbnail URLs
       localBooks = localRecommendations.data.map((book) => ({
       ...book,
-      thumbnail: convertToDirectUrl(book.thumbnail),
+        id: `local-${book.id}`,
+        thumbnail: convertToDirectUrl(book.thumbnail),
     }));
       //console.log("localRecommendations:", localBooks);
     } else {
@@ -46,7 +47,6 @@ export const getRecommendation = async (req, res) => {
 
     // Fetch preference-based recommendations
     const preferenceBooks = await getRecommendationA(req);
-    console.log("preferenceRecommendations:", preferenceBooks);
 
     // Combine recommendations, removing duplicates by id or isbn
     const combinedBooks = [...localBooks, ...preferenceBooks];
