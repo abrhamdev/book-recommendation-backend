@@ -41,9 +41,9 @@ export const googleSignIn = async (req, res) => {
           const user = users[0];
           const [preference] = await fetchPreference(user.id);
           let landing;
-          if (preference.length != 0) { landing = true;} else { landing = false;}
+          if (preference.length != 0) { landing = false;} else { landing = true;}
           const token = generateToken(user.id);
-          return res.status(200).json({ message: 'User signed in successfully', token ,landing});
+          return res.status(200).json({ message: 'User signed in successfully', token ,landing,role:user.role});
         }
 
         await insertUser({
@@ -57,9 +57,9 @@ export const googleSignIn = async (req, res) => {
         const newUser = await checkUser(email);
         const token = generateToken(newUser[0].id);
     
-        return res.status(201).json({ message: 'Login successfull', token });
+        return res.status(201).json({ message: 'Login successfull', token,role:newUser.role });
   } catch (error) {
-    console.error(error.message);
+    console.error(error);
     res.status(500).json({ message: "Internal server error" });
   }
 };
@@ -74,7 +74,6 @@ export const login= async(req,res)=>{
         }
 
         const user=users[0];
-
         const isPasswordValid = await bcrypt.compare(password, user.password);
 
         if (!isPasswordValid) {
@@ -82,7 +81,7 @@ export const login= async(req,res)=>{
         }
        
         const token = generateToken(user.id);
-        return res.status(200).json({ message: "Login successful", token });
+        return res.status(200).json({ message: "Login successful", token,role:user.role});
 
   }catch(error){
     console.log(error);
@@ -127,7 +126,10 @@ export const getUser= async(req,res)=>{
         profile_picture:profileurl,
         role: users[0].role
        }
-        return res.status(200).json({user});
+       const [preference] = await fetchPreference(user.id);
+       let landing;
+       if (preference.length != 0) { landing = false;} else { landing = true;}
+        return res.status(200).json({user,landing});
 
   }catch(error){
     console.log(error);
